@@ -1,7 +1,7 @@
 {
   "name": "go-balancer",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "load-balancer.js",
   "scripts": {
     "start": "nodemon --exec ts-node load-balancer.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@types/node": "^22.13.2",
+    "dotenv": "^16.4.7",
     "typescript": "^5.7.3"
   }
 }
