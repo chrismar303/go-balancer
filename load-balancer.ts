@@ -1,4 +1,5 @@
 import http from 'http'
+import 'dotenv/config'
 
 interface BackendInstance {
   host: string
@@ -6,28 +7,13 @@ interface BackendInstance {
   name: string
 }
 
-/*** TODO: replace with ec2 instances ***/
+/*** Server Group ***/
+const server1 = JSON.parse(process.env.SERVER1!)
+const server2 = JSON.parse(process.env.SERVER2!)
 const clusters: BackendInstance[] = [
-  { host: 'localhost', port: 8081, name: 'Instance 1' },
-  { host: 'localhost', port: 8082, name: 'Instance 2' },
-  { host: 'localhost', port: 8083, name: 'Instance 3' },
+  { host: server1.HOST, port: server1.PORT, name: server1.NAME },
+  { host: server2.HOST, port: server2.PORT, name: server2.NAME },
 ]
-
-/*** Intialize test servers for testing load-balancer ***/
-// TODO: remove once fully tested
-clusters.forEach(serverNode => {
-  http
-    .createServer((req, res) => {
-      console.log(`${serverNode.name} received request ${req.url}`)
-      res.writeHead(200, { 'Content-Type': 'text/plain' })
-      res.end(
-        `${serverNode.name}:${serverNode.port} is serving Request: ${req.url}`,
-      )
-    })
-    .listen(serverNode.port, () => {
-      console.log(`${serverNode.name} listening on port ${serverNode.port}`)
-    })
-})
 
 let currentServerPosition = 0
 const loadBalancer = http.createServer((req, res) => {
@@ -35,7 +21,9 @@ const loadBalancer = http.createServer((req, res) => {
   const server = clusters[currentServerPosition]
   currentServerPosition = (currentServerPosition + 1) % clusters.length
 
-  console.log(`Load-Balancer forwarding request to ${server.name}`)
+  console.log(
+    `Load-Balancer forwarding request to ${server.host}:${[server.port]}`,
+  )
   const proxyReq = http.request(
     {
       host: server.host,
@@ -58,6 +46,6 @@ const loadBalancer = http.createServer((req, res) => {
   })
 })
 
-loadBalancer.listen(8080, () => {
-  console.log('Load Balancer on Port 8080')
+loadBalancer.listen(process.env.PORT || 8080, () => {
+  console.log(`Load Balancer on Port ${process.env.PORT}`)
 })
